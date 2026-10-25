@@ -680,7 +680,7 @@ class LivePage(Page):
         _, width, height = RESOLUTIONS[self.res_combo.currentIndex()]
         self.start_worker = FuncWorker(
             self.app.service.start_live, source, width, height, 30.0, mode,
-            capture_factory=lambda _source: pairing.capture, record=False,
+            capture_factory=lambda _source: pairing.capture,
         )
         self.start_worker.done.connect(self._started)
         self.start_worker.error.connect(self._start_failed)

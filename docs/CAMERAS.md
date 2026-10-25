@@ -60,7 +60,7 @@ frames to the existing phone capture adapter and live redaction pipeline. The ex
 3. Keep both devices on the same non-isolated Wi-Fi. In PrivARcy, open **Live Camera → Phone → Connect Phone with QR**.
    In the installed app, tap **Scan QR Code** and scan the code displayed on the PC.
 4. In the app, select front or rear camera and tap **Start Camera**. Approve camera permission when asked. The app shows its
-   local camera preview; the redacted video appears in PrivARcy's existing desktop preview. Phone-paired video is not recorded.
+   local camera preview; the redacted video appears in PrivARcy's existing desktop preview and is saved when you stop the session.
 5. Close the QR popup with its window close button to hide it without stopping the phone or redaction session. Click
    **Show Phone QR** to reopen the same pairing popup. Use **Stop Camera** in the app to stop the stream. The desktop **Stop**
    control also stops the current stream without deleting trusted phone credentials.
@@ -109,4 +109,4 @@ camera permissions, camera switching, and physical-device streaming still requir
 * If a frame fails to process it is replaced by black, never shown raw; after 30 failures in a row the session stops with a message.
 * The recording is written from the redacted frames; the preview shows the same frames.
 * Face choices work live: click a face in the video or its tile. New faces get temporary labels T-01, T-02, ...
-* The no-recording guarantee above applies specifically to the new QR-paired browser source. Existing USB, IP-camera, and phone-app sessions retain their current redacted-recording behavior.
+* Live recordings, including QR-paired phone video, are written from redacted frames to the outputs folder when the session stops.

@@ -48,15 +48,17 @@ def test_preview_frames_are_redacted_only(tmp_path):
     assert cap.released and s.status()["state"] == "stopped"
 
 
-def test_phone_source_uses_live_pipeline_without_creating_a_recording():
+def test_phone_source_can_save_a_redacted_recording(tmp_path):
     cap = FakeCap()
     source = CameraSource(kind="phone", name="Android phone")
-    session = LiveSession(model(), cfg(), source, 320, 240, 30, capture_factory=lambda _source: cap)
+    output_path = tmp_path / "phone.mp4"
+    session = LiveSession(model(), cfg(), source, 320, 240, 30, output_path,
+                          capture_factory=lambda _source: cap)
     assert session.is_live and wait(lambda: session.stats["frames"] > 5)
     assert session.source.kind == "phone"
-    assert session.output_path is None
+    assert session.output_path == output_path
     session.stop()
-    assert cap.released
+    assert cap.released and output_path.is_file() and output_path.stat().st_size > 0
 
 
 def test_stop_is_idempotent_and_repeated_cycles_release_resources(tmp_path):

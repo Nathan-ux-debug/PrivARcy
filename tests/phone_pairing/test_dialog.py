@@ -264,7 +264,7 @@ def test_phone_frames_only_start_phone_capture_when_phone_is_selected(monkeypatc
     page._poll_phone_pairing()
     worker = Worker.instances[-1]
     assert worker.args[0].kind == "phone"
-    assert worker.kwargs["record"] is False
+    assert worker.kwargs.get("record", True) is True
     assert worker.kwargs["capture_factory"](None) is pairing.capture
 
     page._pairing = None

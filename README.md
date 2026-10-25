@@ -12,7 +12,7 @@ license plates and (optionally) sensitive text, and blurs them. Everything runs 
 | **Face choices** | Three modes: **Auto** (blur everyone, keep chosen people visible), **Selected only**, **Every face**. People are tracked, so a choice holds for the whole video. See [docs/FACE_MODES.md](docs/FACE_MODES.md). |
 | **Manual Blur** | Draw rectangles/ellipses over anything, with a time range. |
 | **Magic Blur** | Click a detected object to blur its shape; it is followed through the video. |
-| **Live Camera** | Built-in/USB cameras, QR-paired Android/iPhone phone cameras, phone camera apps and network cameras (RTSP / HTTP). Same redaction pipeline; QR-paired video is never recorded. See [docs/CAMERAS.md](docs/CAMERAS.md). |
+| **Live Camera** | Built-in/USB cameras, QR-paired Android/iPhone phone cameras, phone camera apps and network cameras (RTSP / HTTP). Redacted live video is saved when you stop the session. See [docs/CAMERAS.md](docs/CAMERAS.md). |
 | **Review Queue / Correction Log** | Uncertain detections (50-80 %) wait for you; every decision is logged and can propose a safer rule. |
 
 ## Install and run
