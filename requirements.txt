@@ -1,0 +1,9 @@
+# Runtime. Prefer:  pip install -e .   (reads pyproject.toml). This file exists for tools that expect one.
+PyQt5>=5.15
+numpy>=1.24
+opencv-python>=4.8
+ultralytics>=8.1
+aiohttp>=3.9
+aiortc>=1.9
+cryptography>=42
+qrcode[pil]>=7.4

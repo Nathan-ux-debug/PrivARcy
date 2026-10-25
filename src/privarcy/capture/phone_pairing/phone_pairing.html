@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Connect phone camera · PrivARcy</title>
+  <link rel="stylesheet" href="/phone_pairing.css">
+</head>
+<body data-secure-url="__SECURE_URL__" data-ca-url="__CA_URL__" data-fingerprint="__FINGERPRINT__">
+<main>
+  <h1>Connect your phone camera</h1>
+  <section id="trust">
+    <p>Secure setup is needed once for this phone. After that, scanning a new QR code opens the camera page directly.</p>
+    <p>Before installing, compare this certificate fingerprint with the one shown in PrivARcy:</p>
+    <code id="fingerprint"></code>
+    <a id="download-ca" class="action">Download secure certificate</a>
+    <details id="android-steps">
+      <summary>Android setup steps</summary>
+      <ol>
+        <li>Download the certificate, then open Android Settings → Security → Encryption &amp; credentials → Install a certificate → CA certificate. Menu names vary by phone; Android may require a screen lock.</li>
+        <li>Verify the fingerprint above against PrivARcy before trusting the certificate.</li>
+        <li>Return to this page and tap Continue securely.</li>
+      </ol>
+    </details>
+    <details id="ios-steps">
+      <summary>iPhone or iPad setup steps</summary>
+      <ol>
+        <li>Download the configuration profile. In Settings, tap Profile Downloaded, then install the PrivARcy profile.</li>
+        <li>Open Settings → General → About → Certificate Trust Settings and enable full trust for the PrivARcy root certificate.</li>
+        <li>Verify the fingerprint above against PrivARcy before enabling trust, then return here.</li>
+      </ol>
+    </details>
+    <a id="secure-link" class="action">Continue securely</a>
+    <p class="note">This local certificate is protected on this PC and remains the same between PrivARcy sessions. Never bypass a browser certificate warning.</p>
+  </section>
+  <section id="camera" class="hidden">
+    <p id="status" class="status" role="status">Choose a camera, then tap Start Camera.</p>
+    <label for="facing">Camera</label>
+    <select id="facing"><option value="environment">Rear camera</option><option value="user">Front camera</option></select>
+    <video id="preview" autoplay muted playsinline></video>
+    <button id="start">Start Camera</button>
+    <button id="stop" class="secondary" disabled>Stop Camera</button>
+    <p id="active" class="active hidden">CAMERA ACTIVE · connecting to PrivARcy</p>
+    <p class="note">Video is sent directly to PrivARcy on your local network. Frames are processed on this PC and are not recorded by phone pairing.</p>
+  </section>
+</main>
+<script src="/phone_pairing.js" defer></script>
+</body>
+</html>

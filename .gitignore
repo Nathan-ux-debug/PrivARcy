@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv*/
+.venv/
+venv/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+*.key
+*.p12
+*.pfx
+*.dpapi
+*.keystore
+*.jks
+
+# Runtime data (created by the app): videos, outputs, databases, job manifests
+/data/*
+!/data/.gitkeep
+
+# Model weights are large: keep them out of git, or track with Git LFS (see models/README.md)
+/models/*.pt
+/models/*.onnx
+
+# Generated outputs and logs
+/output/
+/outputs/
+*.log
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
