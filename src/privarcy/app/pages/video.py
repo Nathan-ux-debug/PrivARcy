@@ -14,7 +14,8 @@ import cv2
 from PyQt5.QtCore import QTimer, Qt, QUrl
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtWidgets import (
-    QDoubleSpinBox, QFileDialog, QFrame, QGridLayout, QHBoxLayout, QProgressBar, QSlider, QStackedWidget, QVBoxLayout, QWidget,
+    QDoubleSpinBox, QFileDialog, QFrame, QGridLayout, QHBoxLayout, QProgressBar, QPushButton, QSlider, QStackedWidget,
+    QVBoxLayout, QWidget,
 )
 
 from privarcy.faces import MODE_HELP, FaceMode
@@ -58,6 +59,8 @@ class VideoPage(Page):
         self._cache: Dict[int, object] = {}
         self._tiles: Dict[str, FaceTile] = {}
         self._loading = False
+        self._playing = False
+        self._autoplay_pending = False
         self.frame_index = 0
         self.last_result = None
         self._debounce = QTimer(self)
@@ -100,6 +103,10 @@ class VideoPage(Page):
         self.slider = QSlider(Qt.Horizontal)
         self.slider.setRange(0, 0)
         self.slider.valueChanged.connect(self._slider_changed)
+        self.play_btn = QPushButton("▶ Play")
+        self.play_btn.clicked.connect(self._toggle_play)
+        self.slider.sliderPressed.connect(self._stop_play)   # dragging the slider pauses
+        row.addWidget(self.play_btn)
         row.addWidget(self.time_label)
         row.addWidget(self.slider, 1)
         card.add(row)
@@ -318,6 +325,7 @@ class VideoPage(Page):
         if self.worker is not None:
             self.banner.show_message("A job is running. Wait for it to finish or cancel it first.", "warn")
             return
+        self._stop_play()
         self.banner.hide()
         self.result_card.hide()
         info = self.app.service.validate_video(path)
@@ -343,6 +351,7 @@ class VideoPage(Page):
         self.slider.setRange(0, max(0, int(info["total_frames"]) - 1))
         self.slider.setValue(0)
         self.slider.blockSignals(False)
+        self._autoplay_pending = True
         self.frame_index = 0
         self._update_time()
         first = read_frame(path, 0)
@@ -413,6 +422,44 @@ class VideoPage(Page):
             fps = self.info["fps"] or 25.0
             self.time_label.setText(f"{human_duration(self.frame_index / fps)} / {human_duration(self.info['duration'])}")
 
+    # ------------------------------------------------------------------ playback
+    def _toggle_play(self) -> None:
+        if self._playing:
+            self._stop_play()
+        else:
+            self._start_play()
+
+    def _start_play(self) -> None:
+        if not self.info or self.preview is None:
+            return
+        if self.frame_index >= self.slider.maximum():
+            self.slider.setValue(0)
+            self._debounce.stop()
+        self._playing = True
+        self.play_btn.setText("⏸ Pause")
+        self._load_frame()
+
+    def _stop_play(self) -> None:
+        self._playing = False
+        self.play_btn.setText("▶ Play")
+
+    def _after_frame_shown(self) -> None:
+        if self._playing:
+            QTimer.singleShot(0, self._advance)
+
+    def _advance(self) -> None:
+        if not self._playing or not self.info:
+            return
+        step = max(1, round((self.info["fps"] or 25.0) / 6))   # about 6 preview frames per second of video
+        nxt = self.frame_index + step
+        if nxt > self.slider.maximum():
+            self._stop_play()
+            return
+        self.slider.setValue(nxt)
+        self._debounce.stop()      # skip the 220 ms scrub delay
+        self._load_frame()
+
+    # ------------------------------------------------------------------ frame analysis
     def _load_frame(self) -> None:
         """Analyse the chosen frame once (slow: runs the detector) then render instantly."""
         if not self.video_path or self.preview is None or self.scan_worker is not None:
@@ -421,9 +468,11 @@ class VideoPage(Page):
             self.analysis = self._cache[self.frame_index]
             self._refresh_faces()
             self._render()
+            self._after_frame_shown()
             return
         frame = read_frame(self.video_path, self.frame_index)
         if frame is None:
+            self._stop_play()
             return
         self.canvas.set_frame(frame)
         self.canvas.set_busy("Analysing frame…")
@@ -438,14 +487,21 @@ class VideoPage(Page):
         if len(self._cache) > 12:
             self._cache.pop(next(iter(self._cache)))
         self.canvas.set_busy("")
-        if index == self.frame_index:
-            self.analysis = analysis
-            self._refresh_faces()
-            self._render()
-            self.start_btn.setEnabled(self.worker is None)
-            self._set_status("Ready", "accent", "Ready to process.")
+        if index != self.frame_index:
+            return
+        self.analysis = analysis
+        self._refresh_faces()
+        self._render()
+        self.start_btn.setEnabled(self.worker is None)
+        self._set_status("Ready", "accent", "Ready to process.")
+        if self._autoplay_pending:
+            self._autoplay_pending = False
+            self._start_play()
+        else:
+            self._after_frame_shown()
 
     def _analysis_failed(self, message: str) -> None:
+        self._stop_play()
         self.canvas.set_busy("")
         self.banner.show_message(f"Could not analyse this frame: {message}", "danger")
 
@@ -644,7 +700,7 @@ class VideoPage(Page):
     # --------------------------------------------------------------------- run
     def _set_controls_enabled(self, enabled: bool) -> None:
         for w in (*self.chips.values(), self.mode, self.method, self.strength, self.tabs, self.draw_btn, self.magic_btn, self.shape,
-                  self.rescan_btn, self.slider, self.choose_btn):
+                  self.rescan_btn, self.slider, self.play_btn, self.choose_btn):
             w.setEnabled(enabled or w is self.choose_btn)
         if enabled:
             self._load_options()
@@ -656,6 +712,7 @@ class VideoPage(Page):
     def start(self) -> None:
         if not self.video_path or self.worker is not None:
             return
+        self._stop_play()
         self.banner.hide()
         self.result_card.hide()
         self._options_changed()
@@ -745,6 +802,7 @@ class VideoPage(Page):
             self._render()
 
     def shutdown(self) -> None:
+        self._stop_play()
         for w in (self.worker, self.scan_worker):
             if w is not None:
                 w.cancel()

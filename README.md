@@ -24,8 +24,8 @@ Windows (PowerShell):
      # creates .venv and installs everything
 # copy your trained detector to models\best.pt
 
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\scripts\run.ps1        # or:  .\.venv\Scripts\python.exe -m privarcy
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass 
+ .\scripts\run.ps1        # or:  .\.venv\Scripts\python.exe -m privarcy
 ```
 
 macOS / Linux: `./scripts/setup.sh && ./scripts/run.sh`.
