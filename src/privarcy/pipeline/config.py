@@ -144,7 +144,7 @@ class PipelineConfig:
     # 'redact_all' : any detected screen is redacted (conservative default)
     # 'ocr_only'   : if OCR is available, redact only sensitive text lines on screens
     screen_policy: str = "redact_all"
-    live_ocr_enabled: bool = False
+    live_ocr_enabled: bool = True
 
     # --- storage -----------------------------------------------------------
     save_review_crops: bool = True

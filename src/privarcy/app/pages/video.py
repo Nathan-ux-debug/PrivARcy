@@ -60,6 +60,7 @@ class VideoPage(Page):
         self._tiles: Dict[str, FaceTile] = {}
         self._loading = False
         self._playing = False
+        self._scan_ids: set = set()
         self._autoplay_pending = False
         self.frame_index = 0
         self.last_result = None
@@ -344,6 +345,7 @@ class VideoPage(Page):
         self._cache.clear()
         self.analysis = None
         self.scan = None
+        self._scan_ids = set()
         self.file_label.setText(Path(path).name)
         self.meta_label.setText(f"{info['width']}×{info['height']}  ·  {info['fps']:.2f} fps  ·  {info['total_frames']} frames  ·  "
                                 f"{human_duration(info['duration'])}  ·  {human_bytes(info['size_bytes'])}")
@@ -388,6 +390,7 @@ class VideoPage(Page):
 
     def _scan_done(self, scan) -> None:
         self.scan = scan
+        self._scan_ids = {i.face_id for i in scan.identities()}
         self._build_policy(scan.book)
         n = len(scan.identities())
         self.scan_label.setText(f"{n} {'person' if n == 1 else 'people'} found. Faces that leave and come back may be listed twice; "
@@ -538,9 +541,14 @@ class VideoPage(Page):
     def _clear_tiles(self) -> None:
         clear_layout(self.tiles_grid)
         self._tiles.clear()
-
+        
     def _identities(self):
-        return self.policy.book.identities() if self.policy is not None else []
+        if self.policy is None:
+            return []
+        idents = self.policy.book.identities()
+        if self._scan_ids:
+            idents = [i for i in idents if i.face_id in self._scan_ids]
+        return idents
 
     def _refresh_faces(self) -> None:
         if self.policy is None:

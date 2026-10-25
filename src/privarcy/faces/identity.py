@@ -26,8 +26,8 @@ from typing import Dict, Iterable, List, Optional, Tuple
 import cv2
 import numpy as np
 
-MERGE_THRESHOLD = 0.95      # strict: link two sightings only when very similar
-SELECTED_THRESHOLD = 0.85   # loose: used only to avoid MISSING a person who must stay blurred
+MERGE_THRESHOLD = 0.55     # strict: link two sightings only when very similar
+SELECTED_THRESHOLD = 0.40   # loose: used only to avoid MISSING a person who must stay blurred
 MIN_FACE_PX = 24            # smaller crops carry too little detail to identify anyone
 THUMB_SIZE = 96
 
