@@ -275,9 +275,11 @@ def test_pairing_http_https_and_webrtc_frame_delivery():
     async def exercise():
         peer = None
         try:
-            response = await asyncio.to_thread(urllib.request.urlopen, service.url, timeout=5)
+            response = await asyncio.to_thread(urllib.request.urlopen, service.qr_url, timeout=5)
             page = response.read().decode("utf-8")
             assert "Install a certificate" in page
+            assert "QR-code certificate fingerprint" in page
+            assert "verify its SHA-256 fingerprint" in page
             assert service.secure_url in page
             base_url = f"http://{service.address}:{service.http_port}"
             script = await asyncio.to_thread(
@@ -373,6 +375,16 @@ def test_pairing_rejects_invalid_token_and_origin():
         with pytest.raises(urllib.error.HTTPError) as error:
             urllib.request.urlopen(request, timeout=5)
         assert error.value.code == 410
+
+        request = urllib.request.Request(service.url)
+        with pytest.raises(urllib.error.HTTPError) as missing_fingerprint:
+            urllib.request.urlopen(request, timeout=5)
+        assert missing_fingerprint.value.code == 403
+
+        request = urllib.request.Request(f"{service.url}?ca_sha256={'0' * 64}")
+        with pytest.raises(urllib.error.HTTPError) as wrong_fingerprint:
+            urllib.request.urlopen(request, timeout=5)
+        assert wrong_fingerprint.value.code == 403
 
         async def wrong_origin():
             trusted_context = ssl.create_default_context(cadata=service._ca_pem.decode("ascii"))

@@ -629,6 +629,10 @@ class PhonePairingService:
         token = request.match_info["token"]
         if not self._valid_host(request) or not self._valid_token(token):
             raise web.HTTPGone(text="This pairing link is invalid, expired, or already used.")
+        qr_fingerprint = request.query.get("ca_sha256", "").lower()
+        expected_fingerprint = self.fingerprint.replace(":", "").lower()
+        if not hmac.compare_digest(qr_fingerprint, expected_fingerprint):
+            raise web.HTTPForbidden(text="The pairing link does not contain the expected certificate fingerprint.")
         template = (Path(__file__).parent / "phone_pairing.html").read_text(encoding="utf-8")
         secure_url = self.secure_url
         ca_url = f"http://{self.address}:{self.http_port}/ca/{self.token}"

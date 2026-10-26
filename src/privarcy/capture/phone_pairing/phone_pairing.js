@@ -11,26 +11,57 @@ const preview = document.getElementById("preview");
 const cameraActive = document.getElementById("active");
 const facing = document.getElementById("facing");
 const fingerprint = document.getElementById("fingerprint");
+const trustStatus = document.getElementById("trust-status");
+const fingerprintVerified = document.getElementById("fingerprint-verified");
 const secureUrl = document.body.dataset.secureUrl;
 const caUrl = document.body.dataset.caUrl;
 
-secureLink.href = secureUrl;
 fingerprint.textContent = document.body.dataset.fingerprint;
+const pairingQuery = new URLSearchParams(location.search);
+const qrFingerprint = pairingQuery.get("ca_sha256") || "";
+const normalizedQrFingerprint = qrFingerprint.replace(/:/g, "").toLowerCase();
+const normalizedPageFingerprint = document.body.dataset.fingerprint.replace(/:/g, "").toLowerCase();
+const fingerprintMatches = /^[a-f0-9]{64}$/.test(normalizedQrFingerprint)
+  && normalizedQrFingerprint === normalizedPageFingerprint;
+if (!fingerprintMatches) {
+  trustStatus.textContent = "The certificate fingerprint in this QR code does not match PrivARcy. Do not install a certificate.";
+  downloadLink.removeAttribute("href");
+  secureLink.removeAttribute("href");
+  downloadLink.setAttribute("aria-disabled", "true");
+  secureLink.setAttribute("aria-disabled", "true");
+}
 
 const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent)
   || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-downloadLink.href = isIos ? `${caUrl}?platform=ios` : caUrl;
+if (fingerprintMatches) {
+  downloadLink.href = isIos ? `${caUrl}?platform=ios` : caUrl;
+  trustStatus.textContent = "Before trusting the downloaded certificate, verify its SHA-256 fingerprint against the value shown in PrivARcy.";
+}
 downloadLink.download = isIos ? "PrivARcy-Phone-CA.mobileconfig" : "PrivARcy-Phone-CA.crt";
 downloadLink.textContent = isIos ? "Download iPhone setup profile" : "Download Android certificate";
 document.getElementById(isIos ? "ios-steps" : "android-steps").open = true;
 
-if (location.protocol === "https:") {
+function updateSecureLink() {
+  if (!fingerprintMatches || !fingerprintVerified.checked) {
+    secureLink.removeAttribute("href");
+    secureLink.setAttribute("aria-disabled", "true");
+    return;
+  }
+  const verifiedUrl = new URL(secureUrl);
+  verifiedUrl.searchParams.set("ca_sha256", normalizedQrFingerprint);
+  verifiedUrl.searchParams.set("verified", "1");
+  secureLink.href = verifiedUrl.toString();
+  secureLink.removeAttribute("aria-disabled");
+}
+
+fingerprintVerified.addEventListener("change", updateSecureLink);
+updateSecureLink();
+
+if (location.protocol === "https:"
+    && fingerprintMatches
+    && pairingQuery.get("verified") === "1") {
   trustPanel.classList.add("hidden");
   cameraPanel.classList.remove("hidden");
-} else {
-  fetch(secureUrl, { mode: "no-cors", cache: "no-store", redirect: "error" })
-    .then(() => location.replace(secureUrl))
-    .catch(() => {});
 }
 
 let peer = null;

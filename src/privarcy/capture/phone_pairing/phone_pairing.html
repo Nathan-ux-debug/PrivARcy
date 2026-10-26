@@ -12,25 +12,31 @@
   <h1>Connect your phone camera</h1>
   <section id="trust">
     <p>Secure setup is needed once for this phone. After that, scanning a new QR code opens the camera page directly.</p>
-    <p>Before installing, compare this certificate fingerprint with the one shown in PrivARcy:</p>
+    <p>Before installing, compare this QR-code certificate fingerprint with the one shown in PrivARcy:</p>
     <code id="fingerprint"></code>
-    <a id="download-ca" class="action">Download secure certificate</a>
+    <p id="trust-status" class="note" role="status"></p>
+    <a id="download-ca" class="action">Download certificate (verify before trust)</a>
     <details id="android-steps">
       <summary>Android setup steps</summary>
       <ol>
-        <li>Download the certificate, then open Android Settings → Security → Encryption &amp; credentials → Install a certificate → CA certificate. Menu names vary by phone; Android may require a screen lock.</li>
-        <li>Verify the fingerprint above against PrivARcy before trusting the certificate.</li>
+        <li>Download the certificate, then inspect its SHA-256 fingerprint on your phone before installing it as a CA. It must match the fingerprint shown in PrivARcy; do not trust it if you cannot verify the match.</li>
+        <li>Open Android Settings → Security → Encryption &amp; credentials → Install a certificate → CA certificate. Menu names vary by phone; Android may require a screen lock.</li>
         <li>Return to this page and tap Continue securely.</li>
       </ol>
     </details>
     <details id="ios-steps">
       <summary>iPhone or iPad setup steps</summary>
       <ol>
-        <li>Download the configuration profile. In Settings, tap Profile Downloaded, then install the PrivARcy profile.</li>
+        <li>Download the configuration profile. Before enabling trust, inspect the certificate's SHA-256 fingerprint in the profile details; it must match the fingerprint shown in PrivARcy. Do not trust it if you cannot verify the match.</li>
+        <li>In Settings, tap Profile Downloaded, then install the PrivARcy profile.</li>
         <li>Open Settings → General → About → Certificate Trust Settings and enable full trust for the PrivARcy root certificate.</li>
-        <li>Verify the fingerprint above against PrivARcy before enabling trust, then return here.</li>
+        <li>Return here only after verifying the installed certificate fingerprint against PrivARcy.</li>
       </ol>
     </details>
+    <label>
+      <input id="fingerprint-verified" type="checkbox">
+      I verified the downloaded certificate's SHA-256 fingerprint against the value shown in PrivARcy.
+    </label>
     <a id="secure-link" class="action">Continue securely</a>
     <p class="note">This local certificate is protected on this PC and remains the same between PrivARcy sessions. Never bypass a browser certificate warning.</p>
   </section>
